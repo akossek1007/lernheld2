@@ -12,8 +12,7 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Persistent volume for SQLite – mount this in Railway
-VOLUME /data
+# Note: Railway manages volumes via its web UI, so we do not use the VOLUME keyword here.
 
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
