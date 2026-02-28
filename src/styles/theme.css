@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@theme {
+  /* Core Palette */
+  --color-primary: oklch(62% 0.18 255);       /* Lernheld-Blau: Friendly & Trustworthy */
+  --color-secondary: oklch(88% 0.22 88);      /* Sonnengelb: High Energy for Rewards */
+  --color-background: oklch(97% 0.01 95);     /* Papier-Weiß: Low Contrast for Reading */
+  
+  /* Semantic Extensions */
+  --color-accent: oklch(75% 0.15 150);      /* Growth-Green for Progress */
+  --color-neutral-soft: oklch(92% 0.01 95);  /* Subtle borders and dividers */
+  
+  /* Typography */
+  --font-family-sans: "Inter", system-ui, sans-serif;
+  --font-family-display: "Outfit", "Inter", sans-serif; /* For headers */
+
+  /* Shadows & Radius */
+  --radius-xl: 1.5rem;
+  --shadow-soft: 0 10px 25px -5px oklch(0% 0 0 / 0.05);
+}
+
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: oklch(25% 0.02 255);
+    font-family: var(--font-family-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-family-display);
+    font-weight: 700;
+    color: var(--color-primary);
+  }
+}

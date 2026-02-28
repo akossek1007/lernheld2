@@ -1,0 +1,8 @@
+node_modules
+dist
+dist-server
+.git
+*.db
+playwright-report
+test-results
+lighthouse-report.html

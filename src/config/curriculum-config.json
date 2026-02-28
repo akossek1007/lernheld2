@@ -1,0 +1,300 @@
+{
+    "math": [
+        {
+            "id": "m1",
+            "name": "Zahlenraum 10",
+            "type": "addition",
+            "range": [
+                0,
+                10
+            ]
+        },
+        {
+            "id": "m2",
+            "name": "Zahlenraum 20",
+            "type": "addition",
+            "range": [
+                0,
+                20
+            ]
+        },
+        {
+            "id": "m3",
+            "name": "Zehnerübergang",
+            "type": "addition_cross_10",
+            "range": [
+                0,
+                20
+            ]
+        },
+        {
+            "id": "m4",
+            "name": "Zahlenraum 100 (glatt)",
+            "type": "addition_100_even",
+            "range": [
+                0,
+                100
+            ]
+        },
+        {
+            "id": "m5",
+            "name": "Zahlenraum 100",
+            "type": "addition_100",
+            "range": [
+                0,
+                100
+            ]
+        }
+    ],
+    "math_1x1": {
+        "progression": [
+            {
+                "weeks": [
+                    1,
+                    2,
+                    3
+                ],
+                "series": [
+                    10
+                ],
+                "name": "Zehner-Reihe",
+                "focus": "Bündelungsprinzip"
+            },
+            {
+                "weeks": [
+                    4,
+                    5,
+                    6
+                ],
+                "series": [
+                    2
+                ],
+                "name": "Zweier-Reihe",
+                "focus": "Verdoppeln"
+            },
+            {
+                "weeks": [
+                    7,
+                    8,
+                    9
+                ],
+                "series": [
+                    5
+                ],
+                "name": "Fünfer-Reihe",
+                "focus": "Kraft der 5"
+            }
+        ]
+    },
+    "german": [
+        {
+            "id": "d1",
+            "name": "Vokale erkennen",
+            "type": "vowel_find"
+        },
+        {
+            "id": "d2",
+            "name": "Silben zählen",
+            "type": "syllable_count"
+        },
+        {
+            "id": "d3",
+            "name": "Anlaute",
+            "type": "starting_sound"
+        },
+        {
+            "id": "d4",
+            "name": "Lesewörter (2 Silben)",
+            "type": "reading_2_syllables"
+        },
+        {
+            "id": "d5",
+            "name": "Sätze bauen",
+            "type": "sentence_build"
+        },
+        {
+            "id": "d_merkwort",
+            "name": "Merkwörter (NRW)",
+            "type": "memory_words",
+            "words": [
+                "ab",
+                "aber",
+                "als",
+                "also",
+                "am",
+                "an",
+                "auch",
+                "auf",
+                "aus",
+                "bald",
+                "bei",
+                "bin",
+                "bis",
+                "bisschen",
+                "da",
+                "danach",
+                "dann",
+                "das",
+                "dein",
+                "denn",
+                "der",
+                "dich",
+                "die",
+                "dies",
+                "dir",
+                "doch",
+                "dort",
+                "durch",
+                "eigentlich",
+                "ein",
+                "einmal",
+                "eins",
+                "er",
+                "es",
+                "euch",
+                "fast",
+                "für",
+                "ganz",
+                "hat",
+                "heraus",
+                "herein",
+                "hier",
+                "hinein",
+                "hinter",
+                "ihm",
+                "ihn",
+                "ihr",
+                "im",
+                "immer",
+                "in",
+                "ist",
+                "ja",
+                "jede",
+                "jetzt",
+                "kein",
+                "letzte",
+                "man",
+                "mehr",
+                "mein",
+                "meistens",
+                "mich",
+                "mir",
+                "mit",
+                "nach",
+                "nein",
+                "nicht",
+                "nichts",
+                "nie",
+                "noch",
+                "nun",
+                "nur",
+                "nächste",
+                "nämlich",
+                "ohne",
+                "sehr",
+                "sein",
+                "selbst",
+                "sich",
+                "sie",
+                "sind",
+                "so",
+                "solche",
+                "sollen",
+                "sonst",
+                "um",
+                "und",
+                "uns",
+                "unser",
+                "unter",
+                "viel",
+                "vielleicht",
+                "vom",
+                "von",
+                "vor",
+                "wann",
+                "war",
+                "waren",
+                "was",
+                "weg",
+                "weil",
+                "weiter",
+                "wenn",
+                "wer",
+                "wie",
+                "wieder",
+                "wir",
+                "wird",
+                "wo",
+                "wollen",
+                "zu",
+                "zum",
+                "zur"
+            ]
+        },
+        {
+            "id": "d_sichtwort",
+            "name": "Sichtwörter (NRW High Frequency)",
+            "type": "sight_words",
+            "words": [
+                "ich",
+                "ist",
+                "du",
+                "er",
+                "sie",
+                "es",
+                "wir",
+                "ihr",
+                "sie",
+                "bin",
+                "bist",
+                "sind",
+                "war",
+                "mein",
+                "dein",
+                "ein",
+                "eine",
+                "einer",
+                "hier",
+                "dort",
+                "da",
+                "auch",
+                "und",
+                "aber",
+                "oder",
+                "nicht",
+                "nun",
+                "schon",
+                "sehr",
+                "so",
+                "wie",
+                "was",
+                "wer",
+                "wo",
+                "wann",
+                "warum",
+                "wie",
+                "zu",
+                "nach",
+                "vor",
+                "bei",
+                "mit",
+                "aus",
+                "von",
+                "um",
+                "an",
+                "auf",
+                "über",
+                "unter",
+                "durch"
+            ]
+        }
+    ],
+    "adaptive_engine": {
+        "promotion_threshold": 0.85,
+        "demotion_threshold": 0.60,
+        "spaced_repetition": {
+            "fail_multiplier": 3.0,
+            "success_requirement": 1
+        }
+    }
+}
