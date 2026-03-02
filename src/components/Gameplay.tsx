@@ -146,7 +146,7 @@ export const Gameplay: React.FC<GameplayProps> = ({ subject, phaseId, userId, on
                         <div className="w-full max-w-lg mx-auto">
                             <Zehnerstopp
                                 start={parseInt(currentTask.question.split(' + ')[0])}
-                                middle={10}
+                                middle={parseInt(currentTask.question.split(' + ')[0]) + currentTask.metadata.step}
                                 end={parseInt(currentTask.question.split(' + ')[0]) + parseInt(currentTask.question.split(' + ')[1])}
                             />
                         </div>

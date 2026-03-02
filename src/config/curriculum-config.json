@@ -95,7 +95,15 @@
         {
             "id": "d2",
             "name": "Silben zählen",
-            "type": "syllable_count"
+            "type": "syllable_count",
+            "words": [
+                "BAUM", "HAUS", "HUND", "FISCH", "PFERD", "STUHL", "TISCH", "SCHUH", "BERG", "FELD",
+                "WALD", "WEG", "SEE", "TEICH", "FLUSS", "BAHN", "BUS", "ZUG",
+                "APFEL", "MUTTER", "VATER", "OMA", "OPA", "BRUDER", "SCHWESTER", "ONKEL", "TANTE",
+                "GARTEN", "WASSER", "FEUER", "ERDE", "BLUME", "ROSE", "WIESE", "KÜCHE", "ZIMMER",
+                "SCHULE", "LEHRER", "SCHÜLER", "JUGEND", "MÄDCHEN", "FRÄULEIN", "NAME", "BUTTER",
+                "WETTER", "ESSEN", "BANANE", "POLIZEI", "FEUERWEHR", "COMPUTER", "MÜLLTONNE"
+            ]
         },
         {
             "id": "d3",
@@ -105,12 +113,35 @@
         {
             "id": "d4",
             "name": "Lesewörter (2 Silben)",
-            "type": "reading_2_syllables"
+            "type": "reading_2_syllables",
+            "words": [
+                "APFEL", "MUTTER", "VATER", "OMA", "OPA", "BRUDER", "SCHWESTER", "ONKEL", "TANTE",
+                "GARTEN", "WASSER", "FEUER", "ERDE", "BLUME", "ROSE", "WIESE", "KÜCHE", "ZIMMER",
+                "SCHULE", "LEHRER"
+            ]
         },
         {
             "id": "d5",
             "name": "Sätze bauen",
-            "type": "sentence_build"
+            "type": "sentence_build",
+            "sentences": [
+                "Das ist ein Apfel.",
+                "Der Hund läuft.",
+                "Die Katze schläft.",
+                "Das Kind spielt.",
+                "Ich sehe einen Ball.",
+                "Wir lesen ein Buch.",
+                "Du bist ein Schüler.",
+                "Die Sonne scheint.",
+                "Der Vogel singt.",
+                "Ein Fisch schwimmt.",
+                "Die Blume blüht.",
+                "Das Haus ist groß.",
+                "Die Mutter kocht.",
+                "Der Vater arbeitet.",
+                "Oma erzählt eine Geschichte.",
+                "Opa fährt Rad."
+            ]
         },
         {
             "id": "d_merkwort",

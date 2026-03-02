@@ -6,7 +6,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 const port = process.env.PORT || 3001;
+import fs from 'fs';
 const dbPath = process.env.DATABASE_PATH || 'lernheld.db';
+// Ensure the directory for the database exists
+const dbDir = path.dirname(dbPath);
+if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
+}
 const db = new Database(dbPath);
 console.log(`Using database at: ${dbPath}`);
 // Initialize Schema

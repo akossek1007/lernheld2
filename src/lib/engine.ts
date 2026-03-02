@@ -1,3 +1,4 @@
+import syllable from 'syllable';
 import curriculumConfig from '../config/curriculum-config.json';
 
 export type Task = {
@@ -7,6 +8,27 @@ export type Task = {
     options?: (string | number)[];
     metadata?: any;
 };
+
+export function countSyllables(word: string): number {
+    if (!word) return 1;
+    const lower = word.toLowerCase();
+    // Remove non-letters but keep German umlauts
+    const cleaned = lower.replace(/[^a-zäöüy]/g, '');
+    if (cleaned.length === 0) return 1;
+
+    // Replace German diphthongs with placeholder
+    const replaced = cleaned.replace(/ei|ai|ey|ay|au|eu|äu|ou/gi, '#');
+
+    // Count diphthong placeholders
+    const diphthongCount = (replaced.match(/#/g) || []).length;
+
+    // Remove placeholders and count vowel groups
+    const withoutDiphthongs = replaced.replace(/#/g, '');
+    const vowelGroups = withoutDiphthongs.match(/[aeiouäöüy]+/g);
+    const vowelGroupCount = vowelGroups ? vowelGroups.length : 0;
+
+    return diphthongCount + vowelGroupCount;
+}
 
 // Simple Spaced Repetition Mock: track failed tasks to prioritize them
 let failedTaskHistory: string[] = [];
@@ -85,12 +107,17 @@ export const generateGermanTask = (phaseId: string): Task => {
     const id = Math.random().toString(36).substr(2, 9);
 
     let words: string[] = [];
-    if (phaseId === 'd_merkwort') {
-        const configPhase = curriculumConfig.german.find(p => p.id === 'd_merkwort');
+    if (phaseId === 'd_merkwort' || phaseId === 'd_sichtwort') {
+        const configPhase = curriculumConfig.german.find(p => p.id === phaseId);
         words = (configPhase as any).words || [];
-    } else if (phaseId === 'd_sichtwort') {
-        const configPhase = curriculumConfig.german.find(p => p.id === 'd_sichtwort');
-        words = (configPhase as any).words || [];
+    } else if (phaseId === 'd2' || phaseId === 'd4') {
+        const configPhase = curriculumConfig.german.find(p => p.id === phaseId);
+        const customWords = (configPhase as any).words;
+        if (customWords && customWords.length > 0) {
+            words = customWords;
+        } else {
+            words = ["ROBOT", "APFEL", "BAUM", "SONNE", "LERNHELD"];
+        }
     } else {
         words = ["ROBOT", "APFEL", "BAUM", "SONNE", "LERNHELD"];
     }
