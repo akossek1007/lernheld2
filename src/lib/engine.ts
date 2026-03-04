@@ -1,4 +1,4 @@
-import syllable from 'syllable';
+import * as syllable from 'syllable';
 import curriculumConfig from '../config/curriculum-config.json';
 
 export type Task = {
