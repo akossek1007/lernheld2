@@ -1,4 +1,3 @@
-import * as syllable from 'syllable';
 import curriculumConfig from '../config/curriculum-config.json';
 
 export type Task = {
@@ -131,7 +130,7 @@ export const generateGermanTask = (phaseId: string): Task => {
                 metadata: { word, type: 'vowel_click' }
             };
         case 'd2': {
-            const count = syllable.count(word);
+            const count = countSyllables(word);
             return { id, question: `Wie viele Silben hat "${word}"?`, answer: count };
         }
         case 'd3': { // Anlaute
