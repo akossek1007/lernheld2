@@ -103,35 +103,39 @@ export const generateMathTask = (phaseId: string): Task => {
 export const generateGermanTask = (phaseId: string): Task => {
     const id = Math.random().toString(36).substr(2, 9);
 
-    let words: string[] = [];
-    if (phaseId === 'd_merkwort' || phaseId === 'd_sichtwort') {
-        const configPhase = curriculumConfig.german.find(p => p.id === phaseId);
-        words = (configPhase as any).words || [];
-    } else if (phaseId === 'd2' || phaseId === 'd4' || phaseId === 'd3') {
-        const configPhase = curriculumConfig.german.find(p => p.id === phaseId);
-        const customWords = (configPhase as any).words;
-        if (customWords && customWords.length > 0) {
-            words = customWords;
-        } else {
-            words = ["ROBOT", "APFEL", "BAUM", "SONNE", "LERNHELD"];
-        }
-    } else {
-        words = ["ROBOT", "APFEL", "BAUM", "SONNE", "LERNHELD"];
+    // Unified word loading: always read from config first
+    const configPhase = curriculumConfig.german.find(p => p.id === phaseId);
+    let words: string[] = (configPhase as any)?.words || [];
+    if (words.length === 0) {
+        words = ["APFEL", "BAUM", "SONNE", "BLUME", "KATZE"];
     }
 
     const word = words[Math.floor(Math.random() * words.length)];
 
     switch (phaseId) {
-        case 'd1': // Vokale
+        case 'd1': { // Vokale
             return {
                 id,
                 question: `Klicke alle Vokale in "${word}" an!`,
                 answer: word.match(/[AEIOUäöü]/gi)?.length || 0,
                 metadata: { word, type: 'vowel_click' }
             };
+        }
         case 'd2': {
             const count = countSyllables(word);
-            return { id, question: `Wie viele Silben hat "${word}"?`, answer: count };
+            // Generate options so the UI shows buttons instead of numpad
+            const correctAnswer = count;
+            const allOptions = [1, 2, 3, 4];
+            const options = allOptions.includes(correctAnswer)
+                ? allOptions
+                : [...allOptions.filter(n => n !== 4), correctAnswer].sort((a, b) => a - b);
+            return {
+                id,
+                question: `Wie viele Silben hat "${word}"?`,
+                answer: count,
+                options,
+                metadata: { word, type: 'syllable_count' }
+            };
         }
         case 'd3': { // Anlaute
             const correct = word[0].toUpperCase();
@@ -143,23 +147,32 @@ export const generateGermanTask = (phaseId: string): Task => {
             return { id, question: `Was ist der erste Buchstabe von "${word}"?`, answer: correct, options };
         }
         case 'd4': {
-            // Lesewörter (2 Silben) – generate meaningful options
+            // Lesewörter – pick the correct word from options
             const otherWords = words.filter(w => w !== word);
             const shuffled = otherWords.sort(() => Math.random() - 0.5);
             const distractors = shuffled.slice(0, 3);
             const options = [word, ...distractors].sort(() => Math.random() - 0.5);
-            return { id, question: `Lies: ${word}`, answer: word, options };
+            return { id, question: `Welches Wort siehst du? Lies genau!`, answer: word, options, metadata: { word, type: 'reading' } };
         }
-        case 'd5': // Sätze bauen
-            const sentence = `Das ist ein ${word}`;
-            // Scramble parts
-            const parts = ["Das", "ist", "ein", word].sort(() => Math.random() - 0.5);
+        case 'd5': { // Sätze bauen – use real sentences from config
+            const sentences: string[] = (configPhase as any)?.sentences || [];
+            let sentence: string;
+            if (sentences.length > 0) {
+                sentence = sentences[Math.floor(Math.random() * sentences.length)];
+            } else {
+                sentence = `Das ist ein ${word}`;
+            }
+            // Remove trailing period for the answer comparison
+            const cleanSentence = sentence.replace(/\.$/, '');
+            // Split into words and scramble
+            const parts = cleanSentence.split(' ').sort(() => Math.random() - 0.5);
             return {
                 id,
                 question: `Bau den Satz:`,
-                answer: sentence,
+                answer: cleanSentence,
                 metadata: { parts, type: 'sentence_build' }
             };
+        }
         case 'd_merkwort':
         case 'd_sichtwort': {
             // Blitzlesen: show the word and select from similar words

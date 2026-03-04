@@ -150,9 +150,9 @@ export const Gameplay: React.FC<GameplayProps> = ({ subject, phaseId, userId, on
                                 end={parseInt(currentTask.question.split(' + ')[0]) + parseInt(currentTask.question.split(' + ')[1])}
                             />
                         </div>
-                    ) : subject === 'german' && currentTask?.id.startsWith('d') && (currentTask.answer as any) > 0 && typeof currentTask.answer === 'number' ? (
+                    ) : subject === 'german' && currentTask?.metadata?.type === 'syllable_count' ? (
                         <div className="flex justify-center">
-                            <SyllableHighlight word={currentTask.question.match(/"([^"]+)"/)?.[1] || ""} syllables={[currentTask.question.match(/"([^"]+)"/)?.[1] || ""]} />
+                            <SyllableHighlight word={currentTask.metadata.word || ""} syllables={[currentTask.metadata.word || ""]} />
                         </div>
                     ) : (
                         <div className="text-7xl font-display text-primary bg-white px-12 py-8 rounded-[40px] shadow-soft min-w-[300px]">
@@ -161,7 +161,7 @@ export const Gameplay: React.FC<GameplayProps> = ({ subject, phaseId, userId, on
                     )}
                 </div>
 
-                {(subject === 'math' || typeof currentTask?.answer === 'number') ? (
+                {(subject === 'math' && !currentTask?.options) || (typeof currentTask?.answer === 'number' && !currentTask?.options && currentTask?.metadata?.type !== 'vowel_click') ? (
                     <div className="grid grid-cols-3 gap-4 max-w-sm w-full">
                         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
                             <button
