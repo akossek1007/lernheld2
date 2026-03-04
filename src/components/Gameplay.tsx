@@ -161,7 +161,7 @@ export const Gameplay: React.FC<GameplayProps> = ({ subject, phaseId, userId, on
                     )}
                 </div>
 
-                {subject === 'math' ? (
+                {(subject === 'math' || typeof currentTask?.answer === 'number') ? (
                     <div className="grid grid-cols-3 gap-4 max-w-sm w-full">
                         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
                             <button

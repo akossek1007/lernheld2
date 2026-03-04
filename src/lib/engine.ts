@@ -1,4 +1,4 @@
-import { syllable } from 'syllable';
+import syllable from 'syllable';
 import curriculumConfig from '../config/curriculum-config.json';
 
 export type Task = {
@@ -44,8 +44,6 @@ export const generateMathTask = (phaseId: string): Task => {
 
     // Prioritize failed tasks (Spaced Repetition Simulation)
     if (failedTaskHistory.length > 0 && Math.random() < 0.3) {
-        // In a real app, we'd fetch the actual task data for this ID
-        // For now, we'll just generate a fresh one and clear the history item
         failedTaskHistory.shift();
     }
 
@@ -110,7 +108,7 @@ export const generateGermanTask = (phaseId: string): Task => {
     if (phaseId === 'd_merkwort' || phaseId === 'd_sichtwort') {
         const configPhase = curriculumConfig.german.find(p => p.id === phaseId);
         words = (configPhase as any).words || [];
-    } else if (phaseId === 'd2' || phaseId === 'd4') {
+    } else if (phaseId === 'd2' || phaseId === 'd4' || phaseId === 'd3') {
         const configPhase = curriculumConfig.german.find(p => p.id === phaseId);
         const customWords = (configPhase as any).words;
         if (customWords && customWords.length > 0) {
@@ -133,14 +131,26 @@ export const generateGermanTask = (phaseId: string): Task => {
                 metadata: { word, type: 'vowel_click' }
             };
         case 'd2': {
-            // In a real app, use a syllable splitting library
-            const answer = word.length > 5 ? 2 : 1;
-            return { id, question: `Wie viele Silben hat "${word}"?`, answer };
+            const count = syllable.count(word);
+            return { id, question: `Wie viele Silben hat "${word}"?`, answer: count };
         }
-        case 'd3': // Anlaute
-            return { id, question: `Was ist der erste Buchstabe von "${word}"?`, answer: word[0].toUpperCase(), options: [word[0].toUpperCase(), "B", "M", "S"] };
-        case 'd4': // Lesewörter (2 Silben)
-            return { id, question: `Lies das Wort:`, answer: word, options: [word, "ANDERS", "FALSCH", "TEST"] };
+        case 'd3': { // Anlaute
+            const correct = word[0].toUpperCase();
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ'.split('');
+            const wrongCandidates = alphabet.filter(c => c !== correct);
+            const shuffled = wrongCandidates.sort(() => Math.random() - 0.5);
+            const wrong = shuffled.slice(0, 3);
+            const options = [correct, ...wrong].sort(() => Math.random() - 0.5);
+            return { id, question: `Was ist der erste Buchstabe von "${word}"?`, answer: correct, options };
+        }
+        case 'd4': {
+            // Lesewörter (2 Silben) – generate meaningful options
+            const otherWords = words.filter(w => w !== word);
+            const shuffled = otherWords.sort(() => Math.random() - 0.5);
+            const distractors = shuffled.slice(0, 3);
+            const options = [word, ...distractors].sort(() => Math.random() - 0.5);
+            return { id, question: `Lies: ${word}`, answer: word, options };
+        }
         case 'd5': // Sätze bauen
             const sentence = `Das ist ein ${word}`;
             // Scramble parts
@@ -152,8 +162,15 @@ export const generateGermanTask = (phaseId: string): Task => {
                 metadata: { parts, type: 'sentence_build' }
             };
         case 'd_merkwort':
-        case 'd_sichtwort':
-            return { id, question: `Blitzlesen: Welches Wort ist das?`, answer: word, options: [word, "FEHLER", "TEST"] };
+        case 'd_sichtwort': {
+            // Blitzlesen: show the word and select from similar words
+            const otherWords = words.filter(w => w !== word);
+            const shuffled = otherWords.sort(() => Math.random() - 0.5);
+            const distractors = shuffled.slice(0, 3);
+            const options = [word, ...distractors].sort(() => Math.random() - 0.5);
+            const instruction = phaseId === 'd_merkwort' ? 'Merkwort' : 'Sichtwort';
+            return { id, question: `${instruction}: ${word}`, answer: word, options };
+        }
         default:
             return { id, question: "A oder B?", answer: "A", options: ["A", "B"] };
     }
