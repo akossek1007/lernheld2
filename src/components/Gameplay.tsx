@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, X, Star, ArrowRight, RotateCcw } from 'lucide-react';
-import { generateMathTask, generateGermanTask, Task } from '../lib/engine';
+import { Check, X, Star } from 'lucide-react';
+import { generateMathTask, generateGermanTask, recordTaskResult, Task } from '../lib/engine';
 import { Icon } from './Icon';
 import { Robot, RobotState } from './Robot';
 import { Zehnerstopp } from './animations/Zehnerstopp';
@@ -27,6 +27,7 @@ export const Gameplay: React.FC<GameplayProps> = ({ subject, phaseId, userId, on
     // Interactive states for specific tasks
     const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
     const [sentenceParts, setSentenceParts] = useState<string[]>([]);
+    const [wordLetters, setWordLetters] = useState<string[]>([]);
 
     useEffect(() => {
         nextTask();
@@ -45,6 +46,7 @@ export const Gameplay: React.FC<GameplayProps> = ({ subject, phaseId, userId, on
         setRobotState('neutral');
         setSelectedIndices([]);
         setSentenceParts([]);
+        setWordLetters([]);
     };
 
     const saveProgress = () => {
@@ -62,10 +64,34 @@ export const Gameplay: React.FC<GameplayProps> = ({ subject, phaseId, userId, on
         });
     };
 
-    const handleAnswer = (val: string | number) => {
-        if (feedback) return;
+    const saveAttempt = (task: Task, isCorrect: boolean, learnerAnswer: string) => {
+        fetch('/api/attempt', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                phase_id: phaseId,
+                subject,
+                task_id: task.id,
+                task_type: task.metadata?.type || 'generic',
+                prompt: task.question,
+                expected_answer: task.answer.toString(),
+                learner_answer: learnerAnswer,
+                is_correct: isCorrect ? 1 : 0,
+                target_word: task.metadata?.word || null
+            })
+        }).catch(() => {
+            console.warn('Aufgabenversuch konnte nicht gespeichert werden.');
+        });
+    };
 
-        const isCorrect = val.toString().toLowerCase() === currentTask?.answer.toString().toLowerCase();
+    const handleAnswer = (val: string | number) => {
+        if (feedback || !currentTask) return;
+
+        const learnerAnswer = val.toString();
+        const isCorrect = learnerAnswer.toLowerCase() === currentTask.answer.toString().toLowerCase();
+        recordTaskResult(currentTask, phaseId, isCorrect);
+        saveAttempt(currentTask, isCorrect, learnerAnswer);
         setFeedback(isCorrect ? 'correct' : 'wrong');
 
         if (isCorrect) {
@@ -152,7 +178,7 @@ export const Gameplay: React.FC<GameplayProps> = ({ subject, phaseId, userId, on
                         </div>
                     ) : subject === 'german' && currentTask?.metadata?.type === 'syllable_count' ? (
                         <div className="flex justify-center">
-                            <SyllableHighlight word={currentTask.metadata.word || ""} syllables={[currentTask.metadata.word || ""]} />
+                            <SyllableHighlight word={currentTask.metadata.word || ''} syllables={currentTask.metadata.syllables || [currentTask.metadata.word || '']} />
                         </div>
                     ) : (
                         <div className="text-7xl font-display text-primary bg-white px-12 py-8 rounded-[40px] shadow-soft min-w-[300px]">
@@ -235,13 +261,57 @@ export const Gameplay: React.FC<GameplayProps> = ({ subject, phaseId, userId, on
                             ))}
                         </div>
                     </div>
+                ) : currentTask?.metadata?.type === 'word_build' ? (
+                    <div className="space-y-8 w-full max-w-2xl">
+                        <div className="min-h-[100px] p-6 bg-white rounded-3xl border-4 border-dashed border-neutral-soft flex flex-wrap gap-3 items-center justify-center text-4xl font-bold tracking-wide">
+                            {wordLetters.length > 0 ? wordLetters.map((letter, i) => (
+                                <span key={`${letter}-${i}`} className="text-primary">{letter}</span>
+                            )) : (
+                                <span className="text-neutral-300">...</span>
+                            )}
+                        </div>
+                        <div className="flex flex-wrap justify-center gap-3">
+                            {currentTask.metadata.letters.map((letter: string, i: number) => (
+                                <button
+                                    key={`${letter}-${i}`}
+                                    disabled={feedback !== null}
+                                    onClick={() => {
+                                        const nextLetters = [...wordLetters, letter];
+                                        setWordLetters(nextLetters);
+                                        if (nextLetters.length === currentTask.answer.toString().length) {
+                                            handleAnswer(nextLetters.join(''));
+                                        }
+                                    }}
+                                    className="w-14 h-14 bg-white rounded-xl shadow-soft text-2xl font-bold hover:scale-105 active:scale-95 transition-transform disabled:opacity-40"
+                                >
+                                    {letter}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="flex justify-center gap-4">
+                            <button
+                                onClick={() => setWordLetters(prev => prev.slice(0, -1))}
+                                disabled={wordLetters.length === 0 || feedback !== null}
+                                className="px-5 py-3 bg-white rounded-xl shadow-soft text-lg font-bold disabled:opacity-40"
+                            >
+                                Zurück
+                            </button>
+                            <button
+                                onClick={() => setWordLetters([])}
+                                disabled={wordLetters.length === 0 || feedback !== null}
+                                className="px-5 py-3 bg-white rounded-xl shadow-soft text-lg font-bold disabled:opacity-40"
+                            >
+                                Löschen
+                            </button>
+                        </div>
+                    </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl text-2xl font-bold">
                         {currentTask?.options?.map((opt, i) => (
                             <button
                                 key={i}
                                 onClick={() => handleAnswer(opt)}
-                                className={`p-6 bg-white rounded-3xl shadow-soft border-4 border-transparent hover:border-primary transition-all text-center`}
+                                className="p-6 bg-white rounded-3xl shadow-soft border-4 border-transparent hover:border-primary transition-all text-center"
                             >
                                 {opt}
                             </button>

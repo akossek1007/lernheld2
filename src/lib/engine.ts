@@ -29,27 +29,101 @@ export function countSyllables(word: string): number {
     return diphthongCount + vowelGroupCount;
 }
 
-// Simple Spaced Repetition Mock: track failed tasks to prioritize them
-let failedTaskHistory: string[] = [];
+const VOWEL_REGEX = /[aeiouäöüy]/i;
+const failedWordsByPhase = new Map<string, string[]>();
 
-export const recordTaskResult = (taskId: string, success: boolean) => {
-    if (!success) {
-        failedTaskHistory.push(taskId);
+const normalizeWord = (word: string): string => word.toLowerCase().trim();
+
+export const splitIntoSyllables = (word: string): string[] => {
+    const text = normalizeWord(word).replace(/[^a-zäöüß]/g, '');
+    if (!text) return [word];
+
+    const parts: string[] = [];
+    let current = '';
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        current += char;
+
+        const next = text[i + 1];
+        if (!next) continue;
+
+        const charIsVowel = VOWEL_REGEX.test(char);
+        const nextIsVowel = VOWEL_REGEX.test(next);
+        if (charIsVowel && !nextIsVowel) {
+            parts.push(current);
+            current = '';
+        }
     }
+
+    if (current) parts.push(current);
+    return parts.length > 0 ? parts : [word];
+};
+
+const trackFailedWord = (phaseId: string, word: string) => {
+    const failed = failedWordsByPhase.get(phaseId) || [];
+    if (!failed.includes(word)) {
+        failed.push(word);
+    }
+    failedWordsByPhase.set(phaseId, failed);
+};
+
+const clearFailedWord = (phaseId: string, word: string) => {
+    const failed = failedWordsByPhase.get(phaseId) || [];
+    failedWordsByPhase.set(phaseId, failed.filter(w => w !== word));
+};
+
+export const recordTaskResult = (task: Task, phaseId: string, success: boolean) => {
+    const word = task.metadata?.word;
+    if (!word || typeof word !== 'string') return;
+
+    if (success) {
+        clearFailedWord(phaseId, word);
+    } else {
+        trackFailedWord(phaseId, word);
+    }
+};
+
+const pickWord = (phaseId: string, words: string[]): string => {
+    const failed = failedWordsByPhase.get(phaseId) || [];
+    if (failed.length > 0 && Math.random() < 0.65) {
+        return failed[Math.floor(Math.random() * failed.length)];
+    }
+
+    return words[Math.floor(Math.random() * words.length)];
+};
+
+const createWordBuildTask = (id: string, phaseId: string, word: string): Task => {
+    const cleanWord = normalizeWord(word);
+    const alphabet = 'abcdefghijklmnopqrstuvwxyzäöüß';
+    const extras: string[] = [];
+    while (extras.length < Math.min(3, cleanWord.length)) {
+        const candidate = alphabet[Math.floor(Math.random() * alphabet.length)];
+        if (!cleanWord.includes(candidate) && !extras.includes(candidate)) {
+            extras.push(candidate);
+        }
+    }
+
+    const letters = [...cleanWord.split(''), ...extras].sort(() => Math.random() - 0.5);
+    const label = phaseId === 'd_merkwort' ? 'Merkwort' : 'Sichtwort';
+    return {
+        id,
+        question: `${label}: Baue das Wort.`,
+        answer: cleanWord,
+        metadata: {
+            type: 'word_build',
+            word: cleanWord,
+            letters
+        }
+    };
 };
 
 export const generateMathTask = (phaseId: string): Task => {
     const id = Math.random().toString(36).substr(2, 9);
 
-    // Prioritize failed tasks (Spaced Repetition Simulation)
-    if (failedTaskHistory.length > 0 && Math.random() < 0.3) {
-        failedTaskHistory.shift();
-    }
-
     if (phaseId.startsWith('m1x1_')) {
         const series = parseInt(phaseId.split('_')[1]);
         const a = Math.floor(Math.random() * 11); // 0-10
-        const focus = curriculumConfig.math_1x1.progression.find(p => p.series.includes(series))?.focus || "";
+        const focus = curriculumConfig.math_1x1.progression.find(p => p.series.includes(series))?.focus || '';
         return {
             id,
             question: `${a} x ${series}`,
@@ -65,14 +139,18 @@ export const generateMathTask = (phaseId: string): Task => {
             return { id, question: `${a} + ${b}`, answer: a + b };
         }
         case 'm2': { // Addition ZR 20 (no crossing)
-            let a: number, b: number;
+            let a: number;
+            let b: number;
             let attempts = 0;
             do {
                 a = Math.floor(Math.random() * 11) + 5; // 5-15
                 b = Math.floor(Math.random() * (21 - a));
                 attempts++;
             } while ((a % 10) + b >= 10 && attempts < 50);
-            if ((a % 10) + b >= 10) { a = 5; b = 3; } // Safe fallback
+            if ((a % 10) + b >= 10) {
+                a = 5;
+                b = 3;
+            } // Safe fallback
             return { id, question: `${a} + ${b}`, answer: a + b };
         }
         case 'm3': { // Zehnerübergang (Transition ZR 20)
@@ -96,7 +174,7 @@ export const generateMathTask = (phaseId: string): Task => {
             return { id, question: `${a} - ${b}`, answer: a - b, metadata: { step: a - 10 } };
         }
         default:
-            return { id, question: "2 + 2", answer: 4 };
+            return { id, question: '2 + 2', answer: 4 };
     }
 };
 
@@ -107,10 +185,10 @@ export const generateGermanTask = (phaseId: string): Task => {
     const configPhase = curriculumConfig.german.find(p => p.id === phaseId);
     let words: string[] = (configPhase as any)?.words || [];
     if (words.length === 0) {
-        words = ["APFEL", "BAUM", "SONNE", "BLUME", "KATZE"];
+        words = ['APFEL', 'BAUM', 'SONNE', 'BLUME', 'KATZE'];
     }
 
-    const word = words[Math.floor(Math.random() * words.length)];
+    const word = pickWord(phaseId, words);
 
     switch (phaseId) {
         case 'd1': { // Vokale
@@ -123,7 +201,6 @@ export const generateGermanTask = (phaseId: string): Task => {
         }
         case 'd2': {
             const count = countSyllables(word);
-            // Generate options so the UI shows buttons instead of numpad
             const correctAnswer = count;
             const allOptions = [1, 2, 3, 4];
             const options = allOptions.includes(correctAnswer)
@@ -134,7 +211,7 @@ export const generateGermanTask = (phaseId: string): Task => {
                 question: `Wie viele Silben hat "${word}"?`,
                 answer: count,
                 options,
-                metadata: { word, type: 'syllable_count' }
+                metadata: { word, type: 'syllable_count', syllables: splitIntoSyllables(word) }
             };
         }
         case 'd3': { // Anlaute
@@ -152,7 +229,7 @@ export const generateGermanTask = (phaseId: string): Task => {
             const shuffled = otherWords.sort(() => Math.random() - 0.5);
             const distractors = shuffled.slice(0, 3);
             const options = [word, ...distractors].sort(() => Math.random() - 0.5);
-            return { id, question: `Welches Wort siehst du? Lies genau!`, answer: word, options, metadata: { word, type: 'reading' } };
+            return { id, question: 'Welches Wort siehst du? Lies genau!', answer: word, options, metadata: { word, type: 'reading' } };
         }
         case 'd5': { // Sätze bauen – use real sentences from config
             const sentences: string[] = (configPhase as any)?.sentences || [];
@@ -168,22 +245,16 @@ export const generateGermanTask = (phaseId: string): Task => {
             const parts = cleanSentence.split(' ').sort(() => Math.random() - 0.5);
             return {
                 id,
-                question: `Bau den Satz:`,
+                question: 'Bau den Satz:',
                 answer: cleanSentence,
                 metadata: { parts, type: 'sentence_build' }
             };
         }
         case 'd_merkwort':
         case 'd_sichtwort': {
-            // Blitzlesen: show the word and select from similar words
-            const otherWords = words.filter(w => w !== word);
-            const shuffled = otherWords.sort(() => Math.random() - 0.5);
-            const distractors = shuffled.slice(0, 3);
-            const options = [word, ...distractors].sort(() => Math.random() - 0.5);
-            const instruction = phaseId === 'd_merkwort' ? 'Merkwort' : 'Sichtwort';
-            return { id, question: `${instruction}: ${word}`, answer: word, options };
+            return createWordBuildTask(id, phaseId, word);
         }
         default:
-            return { id, question: "A oder B?", answer: "A", options: ["A", "B"] };
+            return { id, question: 'A oder B?', answer: 'A', options: ['A', 'B'] };
     }
 };
