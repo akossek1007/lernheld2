@@ -7,6 +7,7 @@ import { Icon } from './Icon';
 import { Robot, RobotState } from './Robot';
 import { Zehnerstopp } from './animations/Zehnerstopp';
 import { SyllableHighlight } from './animations/SyllableHighlight';
+import { WordImage } from './WordImage';
 
 interface GameplayProps {
     subject: 'math' | 'german';
@@ -137,6 +138,11 @@ export const Gameplay: React.FC<GameplayProps> = ({ subject, phaseId, userId, on
         );
     }
 
+    const showWordImage = Boolean(
+        currentTask?.metadata?.word &&
+        (currentTask.metadata.type === 'reading' || currentTask.metadata.type === 'word_build')
+    );
+
     return (
         <div className="flex flex-col h-full bg-background-paper p-6">
             <header className="flex justify-between items-center mb-12">
@@ -150,7 +156,7 @@ export const Gameplay: React.FC<GameplayProps> = ({ subject, phaseId, userId, on
                 <div className="text-neutral-400 font-medium">Aufgabe {totalTasks + 1} / 10</div>
             </header>
 
-            <main className="flex-1 flex flex-col items-center justify-center max-w-4xl mx-auto w-full space-y-12">
+            <main className="flex-1 flex flex-col items-center justify-center max-w-4xl mx-auto w-full space-y-10">
                 <div className="relative">
                     <Robot state={robotState} className="w-56 h-56" />
                     <AnimatePresence>
@@ -166,6 +172,12 @@ export const Gameplay: React.FC<GameplayProps> = ({ subject, phaseId, userId, on
                         )}
                     </AnimatePresence>
                 </div>
+
+                {showWordImage && (
+                    <div className="flex justify-center">
+                        <WordImage word={currentTask?.metadata?.word || ''} />
+                    </div>
+                )}
 
                 <div className="text-center space-y-4 w-full">
                     {currentTask?.metadata?.step !== undefined && subject === 'math' && currentTask.question.includes('+') ? (

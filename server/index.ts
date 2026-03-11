@@ -134,6 +134,11 @@ app.get('/api/progress', (req, res) => {
   res.json(progress);
 });
 
+app.get('/api/attempts', (req, res) => {
+  const attempts = db.prepare('SELECT * FROM task_attempts ORDER BY attempted_at DESC LIMIT 200').all();
+  res.json(attempts);
+});
+
 
 // SPA catch-all: serve index.html for any non-API route
 app.get('*', (_req, res) => {

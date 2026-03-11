@@ -38,25 +38,58 @@ export const splitIntoSyllables = (word: string): string[] => {
     const text = normalizeWord(word).replace(/[^a-zäöüß]/g, '');
     if (!text) return [word];
 
-    const parts: string[] = [];
+    const groups = text.match(/[bcdfghjklmnpqrstvwxyzäöüß]+|[aeiouäöüy]+/gi);
+    if (!groups) return [word];
+
+    const isUpper = word === word.toUpperCase();
+    const syllables: string[] = [];
     let current = '';
-    for (let i = 0; i < text.length; i++) {
-        const char = text[i];
-        current += char;
+    let i = 0;
 
-        const next = text[i + 1];
-        if (!next) continue;
+    if (groups.length > 0 && !VOWEL_REGEX.test(groups[0])) {
+        current += groups[0];
+        i = 1;
+    }
 
-        const charIsVowel = VOWEL_REGEX.test(char);
-        const nextIsVowel = VOWEL_REGEX.test(next);
-        if (charIsVowel && !nextIsVowel) {
-            parts.push(current);
-            current = '';
+    while (i < groups.length) {
+        const group = groups[i];
+        if (VOWEL_REGEX.test(group)) {
+            current += group;
+            i += 1;
+            if (i >= groups.length) {
+                syllables.push(current);
+                current = '';
+                break;
+            }
+
+            const nextGroup = groups[i];
+            if (!VOWEL_REGEX.test(nextGroup)) {
+                if (i + 1 < groups.length) {
+                    if (nextGroup.length === 1) {
+                        syllables.push(current);
+                        current = nextGroup;
+                    } else {
+                        const head = nextGroup.slice(0, -1);
+                        const tail = nextGroup.slice(-1);
+                        syllables.push(current + head);
+                        current = tail;
+                    }
+                    i += 1;
+                } else {
+                    syllables.push(current + nextGroup);
+                    current = '';
+                    i += 1;
+                }
+            }
+        } else {
+            current += group;
+            i += 1;
         }
     }
 
-    if (current) parts.push(current);
-    return parts.length > 0 ? parts : [word];
+    if (current) syllables.push(current);
+    const result = syllables.length > 0 ? syllables : [word];
+    return isUpper ? result.map(s => s.toUpperCase()) : result;
 };
 
 const trackFailedWord = (phaseId: string, word: string) => {
@@ -94,16 +127,7 @@ const pickWord = (phaseId: string, words: string[]): string => {
 
 const createWordBuildTask = (id: string, phaseId: string, word: string): Task => {
     const cleanWord = normalizeWord(word);
-    const alphabet = 'abcdefghijklmnopqrstuvwxyzäöüß';
-    const extras: string[] = [];
-    while (extras.length < Math.min(3, cleanWord.length)) {
-        const candidate = alphabet[Math.floor(Math.random() * alphabet.length)];
-        if (!cleanWord.includes(candidate) && !extras.includes(candidate)) {
-            extras.push(candidate);
-        }
-    }
-
-    const letters = [...cleanWord.split(''), ...extras].sort(() => Math.random() - 0.5);
+    const letters = [...cleanWord.split('')].sort(() => Math.random() - 0.5);
     const label = phaseId === 'd_merkwort' ? 'Merkwort' : 'Sichtwort';
     return {
         id,

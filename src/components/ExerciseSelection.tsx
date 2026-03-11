@@ -4,6 +4,9 @@ import { Icon } from './Icon';
 import { Calculator, BookOpen, ChevronRight } from 'lucide-react';
 
 export const ExerciseSelection = ({ onSelect }: { onSelect: (subject: string, phaseId: string) => void }) => {
+    const mathPhases = curriculumConfig.math.filter((phase: any) => phase.enabled !== false);
+    const germanPhases = curriculumConfig.german.filter((phase: any) => phase.enabled !== false);
+
     return (
         <div className="p-8 max-w-6xl mx-auto space-y-12">
             <header className="text-center">
@@ -16,7 +19,7 @@ export const ExerciseSelection = ({ onSelect }: { onSelect: (subject: string, ph
                     title="Mathematik"
                     icon={Calculator}
                     color="bg-primary text-white"
-                    phases={curriculumConfig.math}
+                    phases={mathPhases}
                     onSelect={(id: string) => onSelect('math', id)}
                 />
 
@@ -25,7 +28,7 @@ export const ExerciseSelection = ({ onSelect }: { onSelect: (subject: string, ph
                     title="Deutsch"
                     icon={BookOpen}
                     color="bg-accent text-white"
-                    phases={curriculumConfig.german}
+                    phases={germanPhases}
                     onSelect={(id: string) => onSelect('german', id)}
                 />
             </div>

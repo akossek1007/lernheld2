@@ -209,6 +209,7 @@
     {
       "id": "d3",
       "name": "Anlaute",
+      "enabled": false,
       "type": "starting_sound",
       "words": [
         "AFFE",
@@ -607,4 +608,6 @@
     }
   }
 }
+
+
 
