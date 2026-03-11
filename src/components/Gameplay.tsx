@@ -7,7 +7,7 @@ import { Icon } from './Icon';
 import { Robot, RobotState } from './Robot';
 import { Zehnerstopp } from './animations/Zehnerstopp';
 import { SyllableHighlight } from './animations/SyllableHighlight';
-import { WordImage } from './WordImage';
+import { WordImage, hasWordImage } from './WordImage';
 
 interface GameplayProps {
     subject: 'math' | 'german';
@@ -140,7 +140,8 @@ export const Gameplay: React.FC<GameplayProps> = ({ subject, phaseId, userId, on
 
     const showWordImage = Boolean(
         currentTask?.metadata?.word &&
-        (currentTask.metadata.type === 'reading' || currentTask.metadata.type === 'word_build')
+        (currentTask.metadata.type === 'reading' || currentTask.metadata.type === 'word_build') &&
+        hasWordImage(currentTask.metadata.word)
     );
 
     return (

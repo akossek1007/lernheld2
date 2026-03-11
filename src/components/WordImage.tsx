@@ -76,59 +76,45 @@ const IconRoom = () => (
     </svg>
 );
 
-const IconGeneric = () => (
-    <svg viewBox="0 0 120 120" className="w-28 h-28">
-        <rect x="25" y="25" width="70" height="70" rx="12" fill="#e0e6ed" stroke="#1f2a44" strokeWidth="4" />
-        <circle cx="60" cy="60" r="12" fill="#b2bec3" />
-    </svg>
-);
+const WORD_IMAGE_MAP: Record<string, React.ReactNode> = {
+    APFEL: <IconApple />,
+    SCHULE: <IconHouse />,
+    HAUS: <IconHouse />,
+    LEHRER: <IconPerson />,
+    MUTTER: <IconPerson />,
+    VATER: <IconPerson />,
+    OMA: <IconPerson />,
+    OPA: <IconPerson />,
+    BRUDER: <IconPerson />,
+    SCHWESTER: <IconPerson />,
+    ONKEL: <IconPerson />,
+    TANTE: <IconPerson />,
+    BLUME: <IconFlower />,
+    ROSE: <IconFlower />,
+    WASSER: <IconWater />,
+    FEUER: <IconFire />,
+    ERDE: <IconEarth />,
+    WIESE: <IconGrass />,
+    GARTEN: <IconGrass />,
+    ZIMMER: <IconRoom />,
+    KUECHE: <IconRoom />,
+    KÜCHE: <IconRoom />
+};
 
-const WordImageGraphic = ({ word }: { word: string }) => {
+export const hasWordImage = (word: string): boolean => {
+    if (!word) return false;
     const key = word.toUpperCase();
-    switch (key) {
-        case 'APFEL':
-            return <IconApple />;
-        case 'SCHULE':
-        case 'HAUS':
-        case 'SCHULLEHRER':
-            return <IconHouse />;
-        case 'LEHRER':
-        case 'MUTTER':
-        case 'VATER':
-        case 'OMA':
-        case 'OPA':
-        case 'BRUDER':
-        case 'SCHWESTER':
-        case 'ONKEL':
-        case 'TANTE':
-            return <IconPerson />;
-        case 'BLUME':
-        case 'ROSE':
-            return <IconFlower />;
-        case 'WASSER':
-            return <IconWater />;
-        case 'FEUER':
-            return <IconFire />;
-        case 'ERDE':
-            return <IconEarth />;
-        case 'WIESE':
-        case 'GARTEN':
-            return <IconGrass />;
-        case 'ZIMMER':
-        case 'KUECHE':
-        case 'KÜCHE':
-            return <IconRoom />;
-        default:
-            return <IconGeneric />;
-    }
+    return Boolean(WORD_IMAGE_MAP[key]);
 };
 
 export const WordImage = ({ word }: { word: string }) => {
     if (!word) return null;
+    const key = word.toUpperCase();
+    const graphic = WORD_IMAGE_MAP[key];
+    if (!graphic) return null;
     return (
         <BaseCard>
-            <WordImageGraphic word={word} />
+            {graphic}
         </BaseCard>
     );
 };
-

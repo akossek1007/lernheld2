@@ -34,60 +34,115 @@ const failedWordsByPhase = new Map<string, string[]>();
 
 const normalizeWord = (word: string): string => word.toLowerCase().trim();
 
-export const splitIntoSyllables = (word: string): string[] => {
-    const text = normalizeWord(word).replace(/[^a-zäöüß]/g, '');
-    if (!text) return [word];
+const tokenizeForSyllables = (text: string): string[] => {
+    const chunks: string[] = [];
+    const input = text.toLowerCase();
+    let i = 0;
+    while (i < input.length) {
+        const rest = input.slice(i);
+        if (rest.startsWith('sch')) {
+            chunks.push('sch');
+            i += 3;
+            continue;
+        }
+        if (rest.startsWith('ch')) {
+            chunks.push('ch');
+            i += 2;
+            continue;
+        }
+        if (rest.startsWith('ck')) {
+            chunks.push('ck');
+            i += 2;
+            continue;
+        }
+        if (rest.startsWith('qu')) {
+            chunks.push('qu');
+            i += 2;
+            continue;
+        }
+        if (rest.startsWith('ph')) {
+            chunks.push('ph');
+            i += 2;
+            continue;
+        }
+        if (rest.startsWith('th')) {
+            chunks.push('th');
+            i += 2;
+            continue;
+        }
+        if (rest.startsWith('sp') || rest.startsWith('st')) {
+            chunks.push(rest.slice(0, 2));
+            i += 2;
+            continue;
+        }
+        const char = input[i];
+        chunks.push(char);
+        i += 1;
+    }
+    return chunks;
+};
 
-    const groups = text.match(/[bcdfghjklmnpqrstvwxyzäöüß]+|[aeiouäöüy]+/gi);
-    if (!groups) return [word];
+const isVowelChunk = (chunk: string): boolean => {
+    if (!chunk) return false;
+    return VOWEL_REGEX.test(chunk[0]);
+};
+
+const ALLOWED_ONSETS = new Set([
+    'b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z',
+    'bl', 'br', 'cl', 'cr', 'dr', 'fl', 'fr', 'gl', 'gr', 'kl', 'kr', 'pl', 'pr', 'tr',
+    'sch', 'schl', 'schr', 'schw', 'sp', 'spr', 'st', 'str',
+    'ch', 'ck', 'ph', 'qu', 'th'
+]);
+
+export const splitIntoSyllables = (word: string): string[] => {
+    const raw = normalizeWord(word).replace(/[^a-zäöüß]/g, '');
+    if (!raw) return [word];
 
     const isUpper = word === word.toUpperCase();
+    const chunks = tokenizeForSyllables(raw);
     const syllables: string[] = [];
-    let current = '';
+    let buffer: string[] = [];
     let i = 0;
 
-    if (groups.length > 0 && !VOWEL_REGEX.test(groups[0])) {
-        current += groups[0];
-        i = 1;
-    }
-
-    while (i < groups.length) {
-        const group = groups[i];
-        if (VOWEL_REGEX.test(group)) {
-            current += group;
-            i += 1;
-            if (i >= groups.length) {
-                syllables.push(current);
-                current = '';
-                break;
+    while (i < chunks.length) {
+        const chunk = chunks[i];
+        buffer.push(chunk);
+        if (isVowelChunk(chunk)) {
+            const consonants: string[] = [];
+            let j = i + 1;
+            while (j < chunks.length && !isVowelChunk(chunks[j])) {
+                consonants.push(chunks[j]);
+                j += 1;
             }
 
-            const nextGroup = groups[i];
-            if (!VOWEL_REGEX.test(nextGroup)) {
-                if (i + 1 < groups.length) {
-                    if (nextGroup.length === 1) {
-                        syllables.push(current);
-                        current = nextGroup;
-                    } else {
-                        const head = nextGroup.slice(0, -1);
-                        const tail = nextGroup.slice(-1);
-                        syllables.push(current + head);
-                        current = tail;
-                    }
-                    i += 1;
-                } else {
-                    syllables.push(current + nextGroup);
-                    current = '';
-                    i += 1;
+            if (consonants.length === 0) {
+                syllables.push(buffer.join(''));
+                buffer = [];
+                i += 1;
+                continue;
+            }
+
+            let splitIndex = consonants.length;
+            for (let k = 0; k < consonants.length; k++) {
+                const onset = consonants.slice(k).join('');
+                if (ALLOWED_ONSETS.has(onset)) {
+                    splitIndex = k;
+                    break;
                 }
             }
-        } else {
-            current += group;
-            i += 1;
+
+            const coda = consonants.slice(0, splitIndex);
+            const onset = consonants.slice(splitIndex);
+
+            syllables.push(buffer.join('') + coda.join(''));
+            buffer = [...onset];
+            i = i + 1 + consonants.length;
+            continue;
         }
+        i += 1;
     }
 
-    if (current) syllables.push(current);
+    if (buffer.length > 0) syllables.push(buffer.join(''));
     const result = syllables.length > 0 ? syllables : [word];
     return isUpper ? result.map(s => s.toUpperCase()) : result;
 };
